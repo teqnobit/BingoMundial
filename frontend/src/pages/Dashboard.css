@@ -226,3 +226,82 @@
   font-size: 0.85rem;
   color: #94a3b8;
 }
+
+/* Estilos del Carrusel */
+.grid-carrusel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 1rem;
+}
+
+.carrusel-header {
+  padding: 0.5rem 1rem;
+}
+
+.carrusel-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.carrusel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+.carrusel-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: white;
+  color: #1e293b;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.carrusel-btn:hover {
+  background: #f1f5f9;
+  transform: scale(1.05);
+}
+
+.carrusel-btn:active {
+  transform: scale(0.95);
+}
+
+.carrusel-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.carrusel-grid .grid-5x5 {
+  grid-template-columns: repeat(5, minmax(60px, 120px));
+  grid-template-rows: repeat(5, minmax(60px, 120px));
+  gap: 4px;
+}
+
+.carrusel-footer {
+  padding: 0.5rem;
+}
+
+.carrusel-contador {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}

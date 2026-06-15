@@ -7,6 +7,7 @@ from app.models import CeldaOracion, CELDA_COLOR_VERDE, Oracion, Usuario
 from app.schemas import (
     CeldaOracionResponse,
     DropPayload,
+    GridUsuarioResponse,
     OracionCreate,
     OracionResponse,
     OracionUpdate,
@@ -109,6 +110,28 @@ def obtener_celdas(
         .all()
     )
     return celdas
+
+
+@router.get("/grids", response_model=list[GridUsuarioResponse])
+def obtener_todos_grids(
+    db: Session = Depends(get_db),
+):
+    """Obtiene todos los grids (usuario + celdas) de todos los usuarios."""
+    usuarios = db.query(Usuario).all()
+    grids = []
+    
+    for usuario in usuarios:
+        celdas = (
+            db.query(CeldaOracion)
+            .filter(CeldaOracion.usuario_id == usuario.id)
+            .all()
+        )
+        grids.append({
+            "usuario": usuario,
+            "celdas": celdas,
+        })
+    
+    return grids
 
 
 @router.post("/drop", response_model=CeldaOracionResponse)

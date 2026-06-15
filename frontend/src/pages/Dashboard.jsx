@@ -12,7 +12,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-ki
 import api from '../api/client'
 import { clearSession, getUsuario } from '../auth/session'
 import AsideOraciones from '../components/AsideOraciones'
-import Grid5x5 from '../components/Grid5x5'
+import GridCarrusel from '../components/GridCarrusel'
 import Header from '../components/Header'
 import './Dashboard.css'
 
@@ -157,7 +157,7 @@ export default function Dashboard() {
           </SortableContext>
 
           <section className="dashboard-body">
-            <Grid5x5 celdas={celdas} />
+            <GridCarrusel />
             {lastDrop && (
               <p className="drop-feedback">
                 Último drop: «{lastDrop.oracion.texto}» → celda [{lastDrop.fila},{' '}

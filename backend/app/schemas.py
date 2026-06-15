@@ -53,3 +53,10 @@ class CeldaOracionResponse(BaseModel):
     oracion: OracionResponse
 
     model_config = {"from_attributes": True}
+
+
+class GridUsuarioResponse(BaseModel):
+    usuario: UsuarioResponse
+    celdas: list[CeldaOracionResponse]
+
+    model_config = {"from_attributes": True}
