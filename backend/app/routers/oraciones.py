@@ -20,24 +20,20 @@ router = APIRouter(prefix="/oraciones", tags=["oraciones"])
 @router.get("", response_model=list[OracionResponse])
 def listar_oraciones(
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
 ):
-    return current_user.oraciones
+    """Obtiene todas las oraciones (compartidas por todos los usuarios)."""
+    oraciones = db.query(Oracion).order_by(Oracion.orden).all()
+    return oraciones
 
 
 @router.post("", response_model=OracionResponse, status_code=status.HTTP_201_CREATED)
 def crear_oracion(
     payload: OracionCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
 ):
-    max_orden = (
-        db.query(Oracion)
-        .filter(Oracion.usuario_id == current_user.id)
-        .count()
-    )
+    """Crea una nueva oración compartida por todos los usuarios."""
+    max_orden = db.query(Oracion).count()
     oracion = Oracion(
-        usuario_id=current_user.id,
         texto=payload.texto,
         orden=max_orden,
     )
@@ -52,9 +48,9 @@ def actualizar_oracion(
     oracion_id: int,
     payload: OracionUpdate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
 ):
-    oracion = _get_oracion_or_404(db, oracion_id, current_user.id)
+    """Actualiza una oración compartida."""
+    oracion = _get_oracion_or_404(db, oracion_id)
     oracion.texto = payload.texto
     db.commit()
     db.refresh(oracion)
@@ -65,9 +61,9 @@ def actualizar_oracion(
 def eliminar_oracion(
     oracion_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
 ):
-    oracion = _get_oracion_or_404(db, oracion_id, current_user.id)
+    """Elimina una oración compartida."""
+    oracion = _get_oracion_or_404(db, oracion_id)
     db.delete(oracion)
     db.commit()
 
@@ -76,18 +72,14 @@ def eliminar_oracion(
 def reordenar_oraciones(
     payload: OrdenUpdate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user),
 ):
-    oraciones = (
-        db.query(Oracion)
-        .filter(Oracion.usuario_id == current_user.id)
-        .all()
-    )
-    ids_usuario = {o.id for o in oraciones}
-    if set(payload.ids) != ids_usuario:
+    """Reordena todas las oraciones compartidas."""
+    oraciones = db.query(Oracion).all()
+    ids_globales = {o.id for o in oraciones}
+    if set(payload.ids) != ids_globales:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="La lista de ids no coincide con las oraciones del usuario",
+            detail="La lista de ids no coincide con todas las oraciones",
         )
 
     oraciones_map = {o.id: o for o in oraciones}
@@ -141,15 +133,15 @@ def registrar_drop(
     db: Session = Depends(get_db),
 ):
     """Registra una oración soltada en una celda de la cuadrícula."""
-    oracion = _get_oracion_or_404(db, payload.oracion_id, current_user.id)
+    oracion = _get_oracion_or_404(db, payload.oracion_id)
     
-    # Si esta oración ya está en alguna otra celda, eliminarla de ahí
+    # Si esta oración ya está en alguna otra celda del usuario, eliminarla de ahí
     db.query(CeldaOracion).filter(
         CeldaOracion.usuario_id == current_user.id,
         CeldaOracion.oracion_id == payload.oracion_id,
     ).delete()
     
-    # Eliminar cualquier oración existente en la celda destino
+    # Eliminar cualquier oración existente en la celda destino del usuario
     db.query(CeldaOracion).filter(
         CeldaOracion.usuario_id == current_user.id,
         CeldaOracion.fila == payload.fila,
@@ -170,12 +162,8 @@ def registrar_drop(
     return celda_oracion
 
 
-def _get_oracion_or_404(db: Session, oracion_id: int, usuario_id: int) -> Oracion:
-    oracion = (
-        db.query(Oracion)
-        .filter(Oracion.id == oracion_id, Oracion.usuario_id == usuario_id)
-        .first()
-    )
+def _get_oracion_or_404(db: Session, oracion_id: int) -> Oracion:
+    oracion = db.query(Oracion).filter(Oracion.id == oracion_id).first()
     if not oracion:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
