@@ -120,7 +120,13 @@ def registrar_drop(
     """Registra una oración soltada en una celda de la cuadrícula."""
     oracion = _get_oracion_or_404(db, payload.oracion_id, current_user.id)
     
-    # Eliminar cualquier oración existente en esta celda
+    # Si esta oración ya está en alguna otra celda, eliminarla de ahí
+    db.query(CeldaOracion).filter(
+        CeldaOracion.usuario_id == current_user.id,
+        CeldaOracion.oracion_id == payload.oracion_id,
+    ).delete()
+    
+    # Eliminar cualquier oración existente en la celda destino
     db.query(CeldaOracion).filter(
         CeldaOracion.usuario_id == current_user.id,
         CeldaOracion.fila == payload.fila,

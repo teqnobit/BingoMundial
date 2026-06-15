@@ -67,6 +67,7 @@ export default function Dashboard() {
   async function handleEliminar(id) {
     await api.delete(`/oraciones/${id}`)
     await cargarOraciones()
+    await cargarCeldas()
   }
 
   async function handleReordenar(ids) {
