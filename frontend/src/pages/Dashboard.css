@@ -204,6 +204,10 @@
   cursor: pointer;
 }
 
+.grid-5x5.readonly .grid-cell {
+  cursor: default;
+}
+
 .celda-estado {
   position: absolute;
   width: 100%;

@@ -47,12 +47,12 @@ function Celda({ fila, columna, celdas, estadosCeldas, onClickCelda }) {
   )
 }
 
-export default function Grid5x5({ celdas = [], estadosCeldas = {}, onClickCelda }) {
+export default function Grid5x5({ celdas = [], estadosCeldas = {}, onClickCelda, readonly }) {
   const filas = Array.from({ length: 5 }, (_, i) => i)
   const columnas = Array.from({ length: 5 }, (_, i) => i)
 
   return (
-    <div className="grid-5x5">
+    <div className={`grid-5x5 ${readonly ? 'readonly' : ''}`}>
       {filas.map((fila) =>
         columnas.map((columna) => (
           <Celda key={`${fila}-${columna}`} fila={fila} columna={columna} celdas={celdas} estadosCeldas={estadosCeldas} onClickCelda={onClickCelda} />

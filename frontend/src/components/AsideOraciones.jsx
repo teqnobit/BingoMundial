@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-function OracionItem({ oracion, celdas, onEditar, onEliminar }) {
+function OracionItem({ oracion, celdas, onEditar, onEliminar, isEditable }) {
   const [editando, setEditando] = useState(false)
   const [texto, setTexto] = useState(oracion.texto)
 
@@ -15,7 +15,7 @@ function OracionItem({ oracion, celdas, onEditar, onEliminar }) {
     isDragging,
   } = useSortable({
     id: oracion.id,
-    disabled: editando,
+    disabled: editando || !isEditable,
   })
 
   // Verificar si esta oración ya está en alguna celda
@@ -56,25 +56,29 @@ function OracionItem({ oracion, celdas, onEditar, onEliminar }) {
         </div>
       ) : (
         <>
-          <span className="drag-handle" {...listeners} {...attributes} title="Arrastrar">
-            ⠿
-          </span>
+          {isEditable && (
+            <span className="drag-handle" {...listeners} {...attributes} title="Arrastrar">
+              ⠿
+            </span>
+          )}
           <span className="oracion-texto">{oracion.texto}</span>
-          <div className="oracion-actions">
-            <button type="button" onClick={() => setEditando(true)} title="Editar">
-              ✎
-            </button>
-            <button type="button" onClick={() => onEliminar(oracion.id)} title="Eliminar">
-              ✕
-            </button>
-          </div>
+          {isEditable && (
+            <div className="oracion-actions">
+              <button type="button" onClick={() => setEditando(true)} title="Editar">
+                ✎
+              </button>
+              <button type="button" onClick={() => onEliminar(oracion.id)} title="Eliminar">
+                ✕
+              </button>
+            </div>
+          )}
         </>
       )}
     </li>
   )
 }
 
-export default function AsideOraciones({ oraciones, celdas, onAgregar, onEditar, onEliminar }) {
+export default function AsideOraciones({ oraciones, celdas, onAgregar, onEditar, onEliminar, isEditable }) {
   const [nueva, setNueva] = useState('')
 
   async function handleAgregar(e) {
@@ -96,19 +100,22 @@ export default function AsideOraciones({ oraciones, celdas, onAgregar, onEditar,
             celdas={celdas}
             onEditar={onEditar}
             onEliminar={onEliminar}
+            isEditable={isEditable}
           />
         ))}
       </ul>
 
-      <form className="oracion-form" onSubmit={handleAgregar}>
-        <input
-          value={nueva}
-          onChange={(e) => setNueva(e.target.value)}
-          placeholder="Nueva oración corta..."
-          maxLength={500}
-        />
-        <button type="submit">+</button>
-      </form>
+      {isEditable && (
+        <form className="oracion-form" onSubmit={handleAgregar}>
+          <input
+            value={nueva}
+            onChange={(e) => setNueva(e.target.value)}
+            placeholder="Nueva oración corta..."
+            maxLength={500}
+          />
+          <button type="submit">+</button>
+        </form>
+      )}
     </aside>
   )
 }

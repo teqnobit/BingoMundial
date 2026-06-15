@@ -3,7 +3,7 @@ import api from '../api/client'
 import { getUsuario } from '../auth/session'
 import Grid5x5 from './Grid5x5'
 
-export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estadosCeldas, onClickCelda }) {
+export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estadosCeldas, onClickCelda, onGridChange }) {
   const usuarioActual = getUsuario()
   const [grids, setGrids] = useState(gridsExterno || [])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -56,6 +56,15 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
     setCurrentIndex((prev) => (prev === grids.length - 1 ? 0 : prev + 1))
   }
 
+  const gridActual = grids[currentIndex]
+  const esGridPropio = gridActual?.usuario?.id === usuarioActual?.id
+
+  useEffect(() => {
+    if (gridActual) {
+      onGridChange?.(gridActual)
+    }
+  }, [gridActual, onGridChange])
+
   if (loading) {
     return <div className="grid-carrusel">Cargando grids...</div>
   }
@@ -63,8 +72,6 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
   if (grids.length === 0) {
     return <div className="grid-carrusel">No hay grids disponibles</div>
   }
-
-  const gridActual = grids[currentIndex]
 
   return (
     <div className="grid-carrusel">
@@ -82,7 +89,12 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
         </button>
 
         <div className="carrusel-grid">
-          <Grid5x5 celdas={gridActual.celdas} estadosCeldas={estadosCeldas} onClickCelda={onClickCelda} />
+          <Grid5x5
+            celdas={gridActual.celdas}
+            estadosCeldas={estadosCeldas}
+            onClickCelda={esGridPropio ? onClickCelda : undefined}
+            readonly={!esGridPropio}
+          />
         </div>
 
         <button

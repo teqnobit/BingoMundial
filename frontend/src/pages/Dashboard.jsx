@@ -25,6 +25,9 @@ export default function Dashboard() {
   const [activeOracion, setActiveOracion] = useState(null)
   const [lastDrop, setLastDrop] = useState(null)
   const [estadosCeldas, setEstadosCeldas] = useState({})
+  const [activeGrid, setActiveGrid] = useState(null)
+
+  const esGridPropio = !activeGrid || activeGrid.usuario.id === usuario?.id
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -119,6 +122,7 @@ export default function Dashboard() {
    * Puedes extender esta función para persistir posiciones u otras acciones.
    */
   async function handleDropEnCelda(oracion, fila, columna) {
+    if (!esGridPropio) return
     try {
       const payload = {
         oracion_id: oracion.id,
@@ -143,6 +147,7 @@ export default function Dashboard() {
   }
 
   function handleClickCelda(fila, columna) {
+    if (!esGridPropio) return
     const key = `${fila}-${columna}`
     const estadoActual = estadosCeldas[key] || 'normal'
     
@@ -163,11 +168,13 @@ export default function Dashboard() {
   }
 
   function handleDragStart(event) {
+    if (!esGridPropio) return
     const oracion = oraciones.find((o) => o.id === event.active.id)
     setActiveOracion(oracion || null)
   }
 
   function handleDragEnd(event) {
+    if (!esGridPropio) return
     setActiveOracion(null)
     const { active, over } = event
     if (!over) return
@@ -217,11 +224,17 @@ export default function Dashboard() {
               onAgregar={handleAgregar}
               onEditar={handleEditar}
               onEliminar={handleEliminar}
+              isEditable={esGridPropio}
             />
           </SortableContext>
 
           <section className="dashboard-body">
-            <GridCarrusel grids={grids} estadosCeldas={estadosCeldas} onClickCelda={handleClickCelda} />
+            <GridCarrusel
+              grids={grids}
+              estadosCeldas={estadosCeldas}
+              onClickCelda={handleClickCelda}
+              onGridChange={setActiveGrid}
+            />
             {lastDrop && (
               <p className="drop-feedback">
                 Último drop: «{lastDrop.oracion.texto}» → celda [{lastDrop.fila},{' '}
