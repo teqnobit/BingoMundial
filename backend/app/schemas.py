@@ -43,3 +43,13 @@ class DropPayload(BaseModel):
     oracion_id: int
     fila: int = Field(ge=0, le=4)
     columna: int = Field(ge=0, le=4)
+
+
+class CeldaOracionResponse(BaseModel):
+    id: int
+    fila: int
+    columna: int
+    color: str
+    oracion: OracionResponse
+
+    model_config = {"from_attributes": True}

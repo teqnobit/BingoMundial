@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
 from app.database import get_db
-from app.models import Oracion, Usuario
+from app.models import CeldaOracion, CELDA_COLOR_VERDE, Oracion, Usuario
 from app.schemas import (
+    CeldaOracionResponse,
     DropPayload,
     OracionCreate,
     OracionResponse,
@@ -96,19 +97,48 @@ def reordenar_oraciones(
     return sorted(oraciones, key=lambda o: o.orden)
 
 
-@router.post("/drop")
+@router.get("/celdas", response_model=list[CeldaOracionResponse])
+def obtener_celdas(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
+    """Obtiene todas las oraciones registradas en celdas del usuario."""
+    celdas = (
+        db.query(CeldaOracion)
+        .filter(CeldaOracion.usuario_id == current_user.id)
+        .all()
+    )
+    return celdas
+
+
+@router.post("/drop", response_model=CeldaOracionResponse)
 def registrar_drop(
     payload: DropPayload,
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Punto de extensión: recibe datos cuando una oración se suelta en la cuadrícula."""
+    """Registra una oración soltada en una celda de la cuadrícula."""
     oracion = _get_oracion_or_404(db, payload.oracion_id, current_user.id)
-    return {
-        "mensaje": "Drop registrado",
-        "oracion": {"id": oracion.id, "texto": oracion.texto},
-        "celda": {"fila": payload.fila, "columna": payload.columna},
-    }
+    
+    # Eliminar cualquier oración existente en esta celda
+    db.query(CeldaOracion).filter(
+        CeldaOracion.usuario_id == current_user.id,
+        CeldaOracion.fila == payload.fila,
+        CeldaOracion.columna == payload.columna,
+    ).delete()
+    
+    # Crear nueva entrada de oración en celda con color verde
+    celda_oracion = CeldaOracion(
+        usuario_id=current_user.id,
+        oracion_id=payload.oracion_id,
+        fila=payload.fila,
+        columna=payload.columna,
+        color=CELDA_COLOR_VERDE,
+    )
+    db.add(celda_oracion)
+    db.commit()
+    db.refresh(celda_oracion)
+    return celda_oracion
 
 
 def _get_oracion_or_404(db: Session, oracion_id: int, usuario_id: int) -> Oracion:

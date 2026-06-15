@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
 from app.routers import auth, oraciones
+from app import models  # noqa: F401
 
 Base.metadata.create_all(bind=engine)
 

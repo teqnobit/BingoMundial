@@ -20,6 +20,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const usuario = getUsuario()
   const [oraciones, setOraciones] = useState([])
+  const [celdas, setCeldas] = useState([])
   const [activeOracion, setActiveOracion] = useState(null)
   const [lastDrop, setLastDrop] = useState(null)
 
@@ -32,12 +33,21 @@ export default function Dashboard() {
     setOraciones(data)
   }, [])
 
+  const cargarCeldas = useCallback(async () => {
+    const { data } = await api.get('/oraciones/celdas')
+    setCeldas(data)
+  }, [])
+
   useEffect(() => {
     cargarOraciones().catch(() => {
       clearSession()
       navigate('/login')
     })
-  }, [cargarOraciones, navigate])
+    cargarCeldas().catch(() => {
+      clearSession()
+      navigate('/login')
+    })
+  }, [cargarOraciones, cargarCeldas, navigate])
 
   function handleLogout() {
     clearSession()
@@ -77,6 +87,7 @@ export default function Dashboard() {
 
     const { data } = await api.post('/oraciones/drop', payload)
     setLastDrop(data)
+    await cargarCeldas()
 
     // Punto de extensión local: emite evento personalizado para otros módulos
     window.dispatchEvent(
@@ -137,6 +148,7 @@ export default function Dashboard() {
           >
             <AsideOraciones
               oraciones={oraciones}
+              celdas={celdas}
               onAgregar={handleAgregar}
               onEditar={handleEditar}
               onEliminar={handleEliminar}
@@ -144,11 +156,11 @@ export default function Dashboard() {
           </SortableContext>
 
           <section className="dashboard-body">
-            <Grid5x5 />
+            <Grid5x5 celdas={celdas} />
             {lastDrop && (
               <p className="drop-feedback">
-                Último drop: «{lastDrop.oracion.texto}» → celda [{lastDrop.celda.fila},{' '}
-                {lastDrop.celda.columna}]
+                Último drop: «{lastDrop.oracion.texto}» → celda [{lastDrop.fila},{' '}
+                {lastDrop.columna}]
               </p>
             )}
           </section>

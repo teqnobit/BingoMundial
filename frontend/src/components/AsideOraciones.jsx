@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-function OracionItem({ oracion, onEditar, onEliminar }) {
+function OracionItem({ oracion, celdas, onEditar, onEliminar }) {
   const [editando, setEditando] = useState(false)
   const [texto, setTexto] = useState(oracion.texto)
 
@@ -18,6 +18,9 @@ function OracionItem({ oracion, onEditar, onEliminar }) {
     disabled: editando,
   })
 
+  // Verificar si esta oración ya está en alguna celda
+  const estaEnCelda = celdas && celdas.some(c => c.oracion.id === oracion.id)
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -32,7 +35,7 @@ function OracionItem({ oracion, onEditar, onEliminar }) {
   }
 
   return (
-    <li ref={setNodeRef} style={style} className="oracion-item">
+    <li ref={setNodeRef} style={style} className={`oracion-item ${estaEnCelda ? 'en-celda' : ''}`}>
       {editando ? (
         <div className="oracion-edit">
           <input
@@ -71,7 +74,7 @@ function OracionItem({ oracion, onEditar, onEliminar }) {
   )
 }
 
-export default function AsideOraciones({ oraciones, onAgregar, onEditar, onEliminar }) {
+export default function AsideOraciones({ oraciones, celdas, onAgregar, onEditar, onEliminar }) {
   const [nueva, setNueva] = useState('')
 
   async function handleAgregar(e) {
@@ -85,6 +88,18 @@ export default function AsideOraciones({ oraciones, onAgregar, onEditar, onElimi
   return (
     <aside className="dashboard-aside">
       <h2>Oraciones</h2>
+      <ul className="oraciones-list">
+        {oraciones.map((oracion) => (
+          <OracionItem
+            key={oracion.id}
+            oracion={oracion}
+            celdas={celdas}
+            onEditar={onEditar}
+            onEliminar={onEliminar}
+          />
+        ))}
+      </ul>
+
       <form className="oracion-form" onSubmit={handleAgregar}>
         <input
           value={nueva}
@@ -94,17 +109,6 @@ export default function AsideOraciones({ oraciones, onAgregar, onEditar, onElimi
         />
         <button type="submit">+</button>
       </form>
-
-      <ul className="oraciones-list">
-        {oraciones.map((oracion) => (
-          <OracionItem
-            key={oracion.id}
-            oracion={oracion}
-            onEditar={onEditar}
-            onEliminar={onEliminar}
-          />
-        ))}
-      </ul>
     </aside>
   )
 }
