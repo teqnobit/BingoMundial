@@ -119,10 +119,13 @@
   border-color: #047857;
 }
 
-.drag-handle {
+.oracion-item.draggable {
   cursor: grab;
-  color: #64748b;
   user-select: none;
+}
+
+.oracion-item.draggable:active {
+  cursor: grabbing;
 }
 
 .oracion-texto {

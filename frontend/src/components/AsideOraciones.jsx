@@ -35,7 +35,13 @@ function OracionItem({ oracion, celdas, onEditar, onEliminar, isEditable }) {
   }
 
   return (
-    <li ref={setNodeRef} style={style} className={`oracion-item ${estaEnCelda ? 'en-celda' : ''}`}>
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={`oracion-item ${estaEnCelda ? 'en-celda' : ''} ${isEditable && !editando ? 'draggable' : ''}`}
+      {...attributes}
+      {...listeners}
+    >
       {editando ? (
         <div className="oracion-edit">
           <input
@@ -56,11 +62,6 @@ function OracionItem({ oracion, celdas, onEditar, onEliminar, isEditable }) {
         </div>
       ) : (
         <>
-          {isEditable && (
-            <span className="drag-handle" {...listeners} {...attributes} title="Arrastrar">
-              ⠿
-            </span>
-          )}
           <span className="oracion-texto">{oracion.texto}</span>
           {isEditable && (
             <div className="oracion-actions">
