@@ -54,6 +54,7 @@ def login(
     )
 
 
+
 @router.get("/me", response_model=UsuarioResponse)
 def me(current_user: Usuario = Depends(get_current_user)):
     return current_user

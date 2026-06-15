@@ -2,11 +2,13 @@ __pycache__/
 *.py[cod]
 venv/
 .env
+*.db
 *.egg-info/
 
 # Node
 node_modules/
 dist/
+package-lock.json
 
 # IDE
 .vscode/

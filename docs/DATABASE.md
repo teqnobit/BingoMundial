@@ -1,23 +1,14 @@
-# Base de datos y ORM (SQLAlchemy + SQL Server)
+# Base de datos y ORM (SQLAlchemy + SQLite)
 
-Este proyecto usa **SQLAlchemy 2.x** como ORM y **pyodbc** como driver para conectarse a **Microsoft SQL Server**.
+Este proyecto usa **SQLAlchemy 2.x** como ORM y **SQLite** como motor de base de datos. No hace falta instalar un servidor de BD ni drivers ODBC: SQLite viene incluido con Python.
 
 ## Requisitos previos
 
-1. **SQL Server** instalado (Express, Developer o Azure SQL).
-2. **ODBC Driver 17 (o 18) for SQL Server** instalado en Windows:
-   - [Descarga Microsoft ODBC Driver](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server)
+Solo necesitas Python 3.11+ y las dependencias del backend (`pip install -r requirements.txt`).
 
-## Crear la base de datos
+## Archivo de base de datos
 
-En SQL Server Management Studio (SSMS) o `sqlcmd`:
-
-```sql
-CREATE DATABASE BingoMundial;
-GO
-```
-
-Las tablas se crean automáticamente al iniciar la API (`Base.metadata.create_all` en `app/main.py`).
+Por defecto la API crea y usa el archivo `backend/bingomundial.db`. Las tablas se generan automáticamente al iniciar la API (`Base.metadata.create_all` en `app/main.py`).
 
 ### Tablas generadas
 
@@ -35,10 +26,10 @@ cd backend
 copy .env.example .env
 ```
 
-2. Edita `.env` con tu cadena de conexión:
+2. Edita `.env` si quieres cambiar la ruta del archivo SQLite:
 
 ```env
-DATABASE_URL=mssql+pyodbc://USUARIO:CONTRASENA@SERVIDOR/BingoMundial?driver=ODBC+Driver+17+for+SQL+Server
+DATABASE_URL=sqlite:///./bingomundial.db
 SECRET_KEY=una-clave-secreta-larga-y-aleatoria
 ACCESS_TOKEN_EXPIRE_MINUTES=480
 ```
@@ -46,27 +37,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES=480
 ### Formato de la URL
 
 ```
-mssql+pyodbc://<usuario>:<contraseña>@<servidor>/<base_de_datos>?driver=ODBC+Driver+17+for+SQL+Server
+sqlite:///<ruta_al_archivo.db>
 ```
 
 Ejemplos:
 
-| Escenario              | URL (fragmento)                                      |
-|------------------------|------------------------------------------------------|
-| Instancia local        | `@localhost/BingoMundial`                            |
-| Instancia nombrada     | `@localhost\\SQLEXPRESS/BingoMundial`                |
-| Puerto explícito       | `@localhost,1433/BingoMundial`                       |
-| Autenticación Windows  | Ver sección siguiente                                |
+| Escenario              | URL                                              |
+|------------------------|--------------------------------------------------|
+| Archivo en `backend/`  | `sqlite:///./bingomundial.db`                    |
+| Ruta absoluta (Windows)| `sqlite:///C:/Users/tu/bingo.db`                 |
+| Memoria (solo pruebas) | `sqlite:///:memory:`                             |
 
-### Autenticación Windows (Trusted Connection)
-
-Si usas tu usuario de Windows en lugar de SQL login:
-
-```env
-DATABASE_URL=mssql+pyodbc://@localhost/BingoMundial?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes
-```
-
-> Si la contraseña contiene caracteres especiales (`@`, `#`, `%`), codifícalos en URL (por ejemplo `@` → `%40`).
+> En Windows usa barras `/` en la ruta absoluta. Si no defines `DATABASE_URL`, la API usa `backend/bingomundial.db` por defecto.
 
 ## Instalar dependencias del backend
 
@@ -93,14 +75,17 @@ Documentación interactiva: [http://localhost:8000/docs](http://localhost:8000/d
 
 ### 1. Engine y sesión
 
-El engine representa la conexión al servidor. La sesión es el “workspace” para consultas:
+El engine representa la conexión al archivo SQLite. La sesión es el “workspace” para consultas:
 
 ```python
 # app/database.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+)
 SessionLocal = sessionmaker(bind=engine)
 
 def get_db():
@@ -198,13 +183,8 @@ class Oracion(Base):
 
 | Error | Posible causa |
 |-------|----------------|
-| `IM002` / driver not found | Instala ODBC Driver 17/18 |
-| Login failed | Usuario/contraseña incorrectos o SQL auth deshabilitado |
-| Cannot open database | La BD `BingoMundial` no existe |
-| Timeout | Firewall o SQL Server no acepta conexiones TCP |
+| `unable to open database file` | La carpeta de destino no existe o no hay permisos de escritura |
+| `database is locked` | Otra app o proceso tiene el archivo abierto en exclusiva |
+| Tablas vacías tras cambiar de motor | Borra `bingomundial.db` y reinicia la API para recrearlas |
 
-Para verificar el driver ODBC instalado en Windows:
-
-```powershell
-Get-OdbcDriver | Where-Object { $_.Name -like '*SQL Server*' }
-```
+Para inspeccionar la base de datos puedes usar [DB Browser for SQLite](https://sqlitebrowser.org/) o la extensión SQLite de VS Code.

@@ -9,7 +9,7 @@ Aplicación con login/registro y un dashboard tipo lienzo: lista de oraciones ar
 | Frontend  | React 18 + Vite + React Router      |
 | Backend   | Python 3.11+ + FastAPI              |
 | ORM       | SQLAlchemy 2.x                      |
-| Base de datos | Microsoft SQL Server            |
+| Base de datos | SQLite                            |
 
 ## Estructura
 
@@ -18,14 +18,14 @@ BingoMundial/
 ├── backend/          # API FastAPI
 ├── frontend/         # React (Vite)
 └── docs/
-    └── DATABASE.md   # Conexión SQL Server + guía ORM
+    └── DATABASE.md   # Conexión SQLite + guía ORM
 ```
 
 ## Inicio rápido
 
 ### 1. Base de datos
 
-Sigue la guía en [docs/DATABASE.md](docs/DATABASE.md): crea la BD `BingoMundial`, configura `.env` y arranca la API.
+Sigue la guía en [docs/DATABASE.md](docs/DATABASE.md): configura `.env` (opcional) y arranca la API; se crea `bingomundial.db` automáticamente.
 
 ```powershell
 cd backend
