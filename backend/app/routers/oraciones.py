@@ -30,6 +30,7 @@ def listar_oraciones(
 def crear_oracion(
     payload: OracionCreate,
     db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
 ):
     """Crea una nueva oración compartida por todos los usuarios."""
     max_orden = db.query(Oracion).count()
@@ -48,6 +49,7 @@ def actualizar_oracion(
     oracion_id: int,
     payload: OracionUpdate,
     db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
 ):
     """Actualiza una oración compartida."""
     oracion = _get_oracion_or_404(db, oracion_id)
@@ -61,6 +63,7 @@ def actualizar_oracion(
 def eliminar_oracion(
     oracion_id: int,
     db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
 ):
     """Elimina una oración compartida."""
     oracion = _get_oracion_or_404(db, oracion_id)
@@ -72,6 +75,7 @@ def eliminar_oracion(
 def reordenar_oraciones(
     payload: OrdenUpdate,
     db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
 ):
     """Reordena todas las oraciones compartidas."""
     oraciones = db.query(Oracion).all()
@@ -139,14 +143,16 @@ def registrar_drop(
     db.query(CeldaOracion).filter(
         CeldaOracion.usuario_id == current_user.id,
         CeldaOracion.oracion_id == payload.oracion_id,
-    ).delete()
+    ).delete(synchronize_session=False)
+    db.flush()
     
     # Eliminar cualquier oración existente en la celda destino del usuario
     db.query(CeldaOracion).filter(
         CeldaOracion.usuario_id == current_user.id,
         CeldaOracion.fila == payload.fila,
         CeldaOracion.columna == payload.columna,
-    ).delete()
+    ).delete(synchronize_session=False)
+    db.flush()
     
     # Crear nueva entrada de oración en celda con color verde
     celda_oracion = CeldaOracion(

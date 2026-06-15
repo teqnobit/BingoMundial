@@ -3,15 +3,30 @@ import api from '../api/client'
 import { getUsuario } from '../auth/session'
 import Grid5x5 from './Grid5x5'
 
-export default function GridCarrusel() {
+export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh }) {
   const usuarioActual = getUsuario()
-  const [grids, setGrids] = useState([])
+  const [grids, setGrids] = useState(gridsExterno || [])
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!gridsExterno)
 
   useEffect(() => {
-    cargarGrids()
-  }, [])
+    if (!gridsExterno) {
+      cargarGrids()
+    }
+  }, [gridsExterno])
+
+  useEffect(() => {
+    if (gridsExterno) {
+      setGrids(gridsExterno)
+      // Cuando los grids se actualicen, encontrar el índice del usuario actual
+      const indiceUsuarioActual = gridsExterno.findIndex(
+        (grid) => grid.usuario.id === usuarioActual.id
+      )
+      if (indiceUsuarioActual !== -1) {
+        setCurrentIndex(indiceUsuarioActual)
+      }
+    }
+  }, [gridsExterno, usuarioActual.id])
 
   async function cargarGrids() {
     try {

@@ -21,6 +21,7 @@ export default function Dashboard() {
   const usuario = getUsuario()
   const [oraciones, setOraciones] = useState([])
   const [celdas, setCeldas] = useState([])
+  const [grids, setGrids] = useState([])
   const [activeOracion, setActiveOracion] = useState(null)
   const [lastDrop, setLastDrop] = useState(null)
 
@@ -29,13 +30,30 @@ export default function Dashboard() {
   )
 
   const cargarOraciones = useCallback(async () => {
-    const { data } = await api.get('/oraciones')
-    setOraciones(data)
+    try {
+      const { data } = await api.get('/oraciones')
+      setOraciones(data)
+    } catch (error) {
+      console.error('Error al cargar oraciones:', error.response?.data || error.message)
+    }
   }, [])
 
   const cargarCeldas = useCallback(async () => {
-    const { data } = await api.get('/oraciones/celdas')
-    setCeldas(data)
+    try {
+      const { data } = await api.get('/oraciones/celdas')
+      setCeldas(data)
+    } catch (error) {
+      console.error('Error al cargar celdas:', error.response?.data || error.message)
+    }
+  }, [])
+
+  const cargarGrids = useCallback(async () => {
+    try {
+      const { data } = await api.get('/oraciones/grids')
+      setGrids(data)
+    } catch (error) {
+      console.error('Error al cargar grids:', error.response?.data || error.message)
+    }
   }, [])
 
   useEffect(() => {
@@ -47,7 +65,11 @@ export default function Dashboard() {
       clearSession()
       navigate('/login')
     })
-  }, [cargarOraciones, cargarCeldas, navigate])
+    cargarGrids().catch(() => {
+      clearSession()
+      navigate('/login')
+    })
+  }, [cargarOraciones, cargarCeldas, cargarGrids, navigate])
 
   function handleLogout() {
     clearSession()
@@ -55,24 +77,40 @@ export default function Dashboard() {
   }
 
   async function handleAgregar(texto) {
-    await api.post('/oraciones', { texto })
-    await cargarOraciones()
+    try {
+      await api.post('/oraciones', { texto })
+      await cargarOraciones()
+    } catch (error) {
+      console.error('Error al agregar oración:', error.response?.data || error.message)
+    }
   }
 
   async function handleEditar(id, texto) {
-    await api.put(`/oraciones/${id}`, { texto })
-    await cargarOraciones()
+    try {
+      await api.put(`/oraciones/${id}`, { texto })
+      await cargarOraciones()
+    } catch (error) {
+      console.error('Error al editar oración:', error.response?.data || error.message)
+    }
   }
 
   async function handleEliminar(id) {
-    await api.delete(`/oraciones/${id}`)
-    await cargarOraciones()
-    await cargarCeldas()
+    try {
+      await api.delete(`/oraciones/${id}`)
+      await cargarOraciones()
+      await cargarCeldas()
+    } catch (error) {
+      console.error('Error al eliminar oración:', error.response?.data || error.message)
+    }
   }
 
   async function handleReordenar(ids) {
-    const { data } = await api.put('/oraciones/reordenar', { ids })
-    setOraciones(data)
+    try {
+      const { data } = await api.put('/oraciones/reordenar', { ids })
+      setOraciones(data)
+    } catch (error) {
+      console.error('Error al reordenar oraciones:', error.response?.data || error.message)
+    }
   }
 
   /**
@@ -80,22 +118,27 @@ export default function Dashboard() {
    * Puedes extender esta función para persistir posiciones u otras acciones.
    */
   async function handleDropEnCelda(oracion, fila, columna) {
-    const payload = {
-      oracion_id: oracion.id,
-      fila,
-      columna,
+    try {
+      const payload = {
+        oracion_id: oracion.id,
+        fila,
+        columna,
+      }
+
+      const { data } = await api.post('/oraciones/drop', payload)
+      setLastDrop(data)
+      await cargarCeldas()
+      await cargarGrids()
+
+      // Punto de extensión local: emite evento personalizado para otros módulos
+      window.dispatchEvent(
+        new CustomEvent('oracion-drop', {
+          detail: { oracion, fila, columna, respuesta: data },
+        }),
+      )
+    } catch (error) {
+      console.error('Error al hacer drop:', error.response?.data || error.message)
     }
-
-    const { data } = await api.post('/oraciones/drop', payload)
-    setLastDrop(data)
-    await cargarCeldas()
-
-    // Punto de extensión local: emite evento personalizado para otros módulos
-    window.dispatchEvent(
-      new CustomEvent('oracion-drop', {
-        detail: { oracion, fila, columna, respuesta: data },
-      }),
-    )
   }
 
   function handleDragStart(event) {
@@ -157,7 +200,7 @@ export default function Dashboard() {
           </SortableContext>
 
           <section className="dashboard-body">
-            <GridCarrusel />
+            <GridCarrusel grids={grids} />
             {lastDrop && (
               <p className="drop-feedback">
                 Último drop: «{lastDrop.oracion.texto}» → celda [{lastDrop.fila},{' '}
