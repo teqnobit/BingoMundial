@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [grids, setGrids] = useState([])
   const [activeOracion, setActiveOracion] = useState(null)
   const [lastDrop, setLastDrop] = useState(null)
+  const [estadosCeldas, setEstadosCeldas] = useState({})
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -141,6 +142,26 @@ export default function Dashboard() {
     }
   }
 
+  function handleClickCelda(fila, columna) {
+    const key = `${fila}-${columna}`
+    const estadoActual = estadosCeldas[key] || 'normal'
+    
+    // Ciclar entre: normal -> fallido -> completado -> normal
+    let nuevoEstado
+    if (estadoActual === 'normal') {
+      nuevoEstado = 'fallido'
+    } else if (estadoActual === 'fallido') {
+      nuevoEstado = 'completado'
+    } else {
+      nuevoEstado = 'normal'
+    }
+    
+    setEstadosCeldas({
+      ...estadosCeldas,
+      [key]: nuevoEstado === 'normal' ? undefined : nuevoEstado,
+    })
+  }
+
   function handleDragStart(event) {
     const oracion = oraciones.find((o) => o.id === event.active.id)
     setActiveOracion(oracion || null)
@@ -200,7 +221,7 @@ export default function Dashboard() {
           </SortableContext>
 
           <section className="dashboard-body">
-            <GridCarrusel grids={grids} />
+            <GridCarrusel grids={grids} estadosCeldas={estadosCeldas} onClickCelda={handleClickCelda} />
             {lastDrop && (
               <p className="drop-feedback">
                 Último drop: «{lastDrop.oracion.texto}» → celda [{lastDrop.fila},{' '}

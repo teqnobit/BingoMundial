@@ -3,7 +3,7 @@ import api from '../api/client'
 import { getUsuario } from '../auth/session'
 import Grid5x5 from './Grid5x5'
 
-export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh }) {
+export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estadosCeldas, onClickCelda }) {
   const usuarioActual = getUsuario()
   const [grids, setGrids] = useState(gridsExterno || [])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -82,7 +82,7 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh }) {
         </button>
 
         <div className="carrusel-grid">
-          <Grid5x5 celdas={gridActual.celdas} />
+          <Grid5x5 celdas={gridActual.celdas} estadosCeldas={estadosCeldas} onClickCelda={onClickCelda} />
         </div>
 
         <button
