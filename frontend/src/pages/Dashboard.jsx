@@ -33,7 +33,15 @@ export default function Dashboard() {
     }
   })
   const [activeGrid, setActiveGrid] = useState(null)
+  const [anchoWindow, setAnchoWindow] = useState(window.innerWidth)
 
+  useEffect(() => {
+    const handleResize = () => {
+      setAnchoWindow(window.innerWidth)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
   useEffect(() => {
     localStorage.setItem('bingo_estados_celdas', JSON.stringify(estadosCeldas))
   }, [estadosCeldas])
@@ -152,14 +160,14 @@ export default function Dashboard() {
         setEstadosCeldas((prev) => {
           const estadosUsuario = { ...(prev[usuarioIdActivo] || {}) }
           const keyDestino = `${fila}-${columna}`
-          
+
           if (celdaExistente) {
             const keyOrigen = `${celdaExistente.fila}-${celdaExistente.columna}`
             const estadoOrigen = estadosUsuario[keyOrigen]
-            
+
             // Eliminar estado de la coordenada de origen
             delete estadosUsuario[keyOrigen]
-            
+
             // Mover al destino si tenía un estado asignado
             if (estadoOrigen) {
               estadosUsuario[keyDestino] = estadoOrigen
@@ -170,7 +178,7 @@ export default function Dashboard() {
             // Si viene del aside (es nueva en el grid), limpiar cualquier estado previo en la celda destino
             delete estadosUsuario[keyDestino]
           }
-          
+
           return {
             ...prev,
             [usuarioIdActivo]: estadosUsuario,
@@ -200,7 +208,7 @@ export default function Dashboard() {
 
     const estadosCeldasUsuario = estadosCeldas[usuarioIdActivo] || {}
     const estadoActual = estadosCeldasUsuario[key] || 'normal'
-    
+
     // Ciclar entre: normal -> fallido -> completado -> normal
     let nuevoEstado
     if (estadoActual === 'normal') {
@@ -210,7 +218,7 @@ export default function Dashboard() {
     } else {
       nuevoEstado = 'normal'
     }
-    
+
     setEstadosCeldas((prev) => ({
       ...prev,
       [usuarioIdActivo]: {
@@ -258,7 +266,7 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
-      <Header titulo="Bingo Mundial — Lienzo" onLogout={handleLogout} usuario={usuario} />
+      <Header titulo="Bingo Mundial" onLogout={handleLogout} usuario={usuario} />
 
       <DndContext
         sensors={sensors}
@@ -271,14 +279,14 @@ export default function Dashboard() {
             items={oraciones.map((o) => o.id)}
             strategy={verticalListSortingStrategy}
           >
-            <AsideOraciones
+            {(anchoWindow > 1024) && <AsideOraciones
               oraciones={oraciones}
               celdas={activeGrid ? activeGrid.celdas : celdas}
               onAgregar={handleAgregar}
               onEditar={handleEditar}
               onEliminar={handleEliminar}
               isEditable={esGridPropio}
-            />
+            />}
           </SortableContext>
 
           <section className="dashboard-body">

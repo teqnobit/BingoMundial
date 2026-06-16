@@ -197,7 +197,7 @@ Encabezado de la aplicación con datos del usuario
 
 ```javascript
 <Header 
-  titulo="Bingo Mundial — Lienzo"
+  titulo="Bingo Mundial"
   onLogout={handleLogout}
   usuario={usuario}
 />
