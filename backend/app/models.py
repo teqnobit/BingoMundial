@@ -38,6 +38,7 @@ class CeldaOracion(Base):
     fila: Mapped[int] = mapped_column(Integer, nullable=False)
     columna: Mapped[int] = mapped_column(Integer, nullable=False)
     color: Mapped[str] = mapped_column(String(7), default=CELDA_COLOR_VERDE, nullable=False)
+    estado: Mapped[str] = mapped_column(String(20), default="normal", nullable=False)
 
     usuario: Mapped["Usuario"] = relationship()
     oracion: Mapped["Oracion"] = relationship(back_populates="celdas")

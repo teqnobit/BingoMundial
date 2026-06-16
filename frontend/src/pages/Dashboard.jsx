@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   DndContext,
@@ -24,16 +24,20 @@ export default function Dashboard() {
   const [grids, setGrids] = useState([])
   const [activeOracion, setActiveOracion] = useState(null)
   const [lastDrop, setLastDrop] = useState(null)
-  const [estadosCeldas, setEstadosCeldas] = useState(() => {
-    try {
-      const saved = localStorage.getItem('bingo_estados_celdas')
-      return saved ? JSON.parse(saved) : {}
-    } catch {
-      return {}
-    }
-  })
   const [activeGrid, setActiveGrid] = useState(null)
   const [anchoWindow, setAnchoWindow] = useState(window.innerWidth)
+
+  // Derivar estadosCeldas desde los datos del grid activo (persistidos en el servidor)
+  const estadosCeldasActivo = useMemo(() => {
+    const celdasGrid = activeGrid ? activeGrid.celdas : celdas
+    const estados = {}
+    for (const celda of celdasGrid) {
+      if (celda.estado && celda.estado !== 'normal') {
+        estados[`${celda.fila}-${celda.columna}`] = celda.estado
+      }
+    }
+    return estados
+  }, [activeGrid, celdas])
 
   useEffect(() => {
     const handleResize = () => {
@@ -42,9 +46,6 @@ export default function Dashboard() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-  useEffect(() => {
-    localStorage.setItem('bingo_estados_celdas', JSON.stringify(estadosCeldas))
-  }, [estadosCeldas])
 
   const esGridPropio = !activeGrid || activeGrid.usuario.id === usuario?.id
 
@@ -143,9 +144,6 @@ export default function Dashboard() {
   async function handleDropEnCelda(oracion, fila, columna) {
     if (!esGridPropio) return
     try {
-      // Buscar si la oración ya estaba colocada en alguna celda antes del drop
-      const celdaExistente = celdas.find((c) => c.oracion.id === oracion.id)
-
       const payload = {
         oracion_id: oracion.id,
         fila,
@@ -154,37 +152,6 @@ export default function Dashboard() {
 
       const { data } = await api.post('/oraciones/drop', payload)
       setLastDrop(data)
-
-      const usuarioIdActivo = activeGrid?.usuario?.id || usuario?.id
-      if (usuarioIdActivo) {
-        setEstadosCeldas((prev) => {
-          const estadosUsuario = { ...(prev[usuarioIdActivo] || {}) }
-          const keyDestino = `${fila}-${columna}`
-
-          if (celdaExistente) {
-            const keyOrigen = `${celdaExistente.fila}-${celdaExistente.columna}`
-            const estadoOrigen = estadosUsuario[keyOrigen]
-
-            // Eliminar estado de la coordenada de origen
-            delete estadosUsuario[keyOrigen]
-
-            // Mover al destino si tenía un estado asignado
-            if (estadoOrigen) {
-              estadosUsuario[keyDestino] = estadoOrigen
-            } else {
-              delete estadosUsuario[keyDestino]
-            }
-          } else {
-            // Si viene del aside (es nueva en el grid), limpiar cualquier estado previo en la celda destino
-            delete estadosUsuario[keyDestino]
-          }
-
-          return {
-            ...prev,
-            [usuarioIdActivo]: estadosUsuario,
-          }
-        })
-      }
 
       await cargarCeldas()
       await cargarGrids()
@@ -200,14 +167,10 @@ export default function Dashboard() {
     }
   }
 
-  function handleClickCelda(fila, columna) {
+  async function handleClickCelda(fila, columna) {
     if (!esGridPropio) return
     const key = `${fila}-${columna}`
-    const usuarioIdActivo = activeGrid?.usuario?.id || usuario?.id
-    if (!usuarioIdActivo) return
-
-    const estadosCeldasUsuario = estadosCeldas[usuarioIdActivo] || {}
-    const estadoActual = estadosCeldasUsuario[key] || 'normal'
+    const estadoActual = estadosCeldasActivo[key] || 'normal'
 
     // Ciclar entre: normal -> fallido -> completado -> normal
     let nuevoEstado
@@ -219,13 +182,13 @@ export default function Dashboard() {
       nuevoEstado = 'normal'
     }
 
-    setEstadosCeldas((prev) => ({
-      ...prev,
-      [usuarioIdActivo]: {
-        ...prev[usuarioIdActivo],
-        [key]: nuevoEstado === 'normal' ? undefined : nuevoEstado,
-      },
-    }))
+    try {
+      await api.put('/oraciones/celdas/estado', { fila, columna, estado: nuevoEstado })
+      await cargarCeldas()
+      await cargarGrids()
+    } catch (error) {
+      console.error('Error al actualizar estado de celda:', error.response?.data || error.message)
+    }
   }
 
   function handleDragStart(event) {
@@ -292,7 +255,7 @@ export default function Dashboard() {
           <section className="dashboard-body">
             <GridCarrusel
               grids={grids}
-              estadosCeldas={activeGrid ? (estadosCeldas[activeGrid.usuario.id] || {}) : {}}
+              estadosCeldas={estadosCeldasActivo}
               onClickCelda={handleClickCelda}
               onGridChange={setActiveGrid}
             />

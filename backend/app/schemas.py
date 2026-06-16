@@ -45,11 +45,18 @@ class DropPayload(BaseModel):
     columna: int = Field(ge=0, le=4)
 
 
+class EstadoCeldaUpdate(BaseModel):
+    fila: int = Field(ge=0, le=4)
+    columna: int = Field(ge=0, le=4)
+    estado: str = Field(pattern="^(normal|fallido|completado)$")
+
+
 class CeldaOracionResponse(BaseModel):
     id: int
     fila: int
     columna: int
     color: str
+    estado: str
     oracion: OracionResponse
 
     model_config = {"from_attributes": True}

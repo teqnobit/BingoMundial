@@ -7,6 +7,7 @@ from app.models import CeldaOracion, CELDA_COLOR_VERDE, Oracion, Usuario
 from app.schemas import (
     CeldaOracionResponse,
     DropPayload,
+    EstadoCeldaUpdate,
     GridUsuarioResponse,
     OracionCreate,
     OracionResponse,
@@ -166,6 +167,33 @@ def registrar_drop(
     db.commit()
     db.refresh(celda_oracion)
     return celda_oracion
+
+
+@router.put("/celdas/estado", response_model=CeldaOracionResponse)
+def actualizar_estado_celda(
+    payload: EstadoCeldaUpdate,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Actualiza el estado de una celda del usuario (normal, fallido, completado)."""
+    celda = (
+        db.query(CeldaOracion)
+        .filter(
+            CeldaOracion.usuario_id == current_user.id,
+            CeldaOracion.fila == payload.fila,
+            CeldaOracion.columna == payload.columna,
+        )
+        .first()
+    )
+    if not celda:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Celda no encontrada",
+        )
+    celda.estado = payload.estado
+    db.commit()
+    db.refresh(celda)
+    return celda
 
 
 def _get_oracion_or_404(db: Session, oracion_id: int) -> Oracion:
