@@ -66,6 +66,15 @@ export default function Header({ titulo, onLogout, usuario }) {
                 <button
                   type="button"
                   className="hamburger-item"
+                  onClick={() => { setMenuAbierto(false); onMenuOptionClicked('https://a4.espncdn.com/combiner/i?img=%2Fphoto%2F2026%2F0331%2FIRAK_GRUPOS.png&w=1140&cquality=40&format=jpg'); }}
+                >
+                  🔠 Grupos
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="hamburger-item"
                   onClick={() => { setMenuAbierto(false); onLogout(); }}
                 >
                   🚪 Salir
