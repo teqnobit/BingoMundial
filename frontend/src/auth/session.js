@@ -1,11 +1,19 @@
 export function saveSession(token, usuario) {
   localStorage.setItem('token', token)
   localStorage.setItem('usuario', JSON.stringify(usuario))
+  localStorage.removeItem('guest')
+}
+
+export function saveGuestSession() {
+  localStorage.removeItem('token')
+  localStorage.setItem('usuario', JSON.stringify({ id: null, nombre: 'Invitado' }))
+  localStorage.setItem('guest', 'true')
 }
 
 export function clearSession() {
   localStorage.removeItem('token')
   localStorage.removeItem('usuario')
+  localStorage.removeItem('guest')
 }
 
 export function getToken() {
@@ -18,5 +26,9 @@ export function getUsuario() {
 }
 
 export function isAuthenticated() {
-  return Boolean(getToken())
+  return Boolean(getToken()) || isGuest()
+}
+
+export function isGuest() {
+  return localStorage.getItem('guest') === 'true'
 }

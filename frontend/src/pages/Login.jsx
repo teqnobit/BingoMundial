@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api/client'
-import { saveSession } from '../auth/session'
+import { saveSession, saveGuestSession } from '../auth/session'
 import './Auth.css'
 
 export default function Login() {
@@ -34,6 +34,11 @@ export default function Login() {
     }
   }
 
+  function handleGuest() {
+    saveGuestSession()
+    navigate('/dashboard')
+  }
+
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
@@ -61,6 +66,12 @@ export default function Login() {
         <button type="submit" disabled={loading}>
           {loading ? 'Entrando...' : 'Entrar'}
         </button>
+        <div className="auth-divider">
+          <span>o</span>
+        </div>
+        <button type="button" className="auth-guest-btn" onClick={handleGuest}>
+          👁 Entrar como Invitado
+        </button>
         <p className="auth-link">
           ¿No tienes cuenta? <Link to="/signup">Regístrate</Link>
         </p>
@@ -68,3 +79,4 @@ export default function Login() {
     </div>
   )
 }
+

@@ -10,7 +10,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import api from '../api/client'
-import { clearSession, getUsuario } from '../auth/session'
+import { clearSession, getUsuario, isGuest } from '../auth/session'
 import AsideOraciones from '../components/AsideOraciones'
 import GridCarrusel from '../components/GridCarrusel'
 import Header from '../components/Header'
@@ -19,6 +19,7 @@ import './Dashboard.css'
 export default function Dashboard() {
   const navigate = useNavigate()
   const usuario = getUsuario()
+  const esInvitado = isGuest()
   const [oraciones, setOraciones] = useState([])
   const [celdas, setCeldas] = useState([])
   const [grids, setGrids] = useState([])
@@ -47,7 +48,7 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const esGridPropio = !activeGrid || activeGrid.usuario.id === usuario?.id
+  const esGridPropio = !esInvitado && (!activeGrid || activeGrid.usuario.id === usuario?.id)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -82,18 +83,24 @@ export default function Dashboard() {
 
   useEffect(() => {
     cargarOraciones().catch(() => {
-      clearSession()
-      navigate('/login')
+      if (!esInvitado) {
+        clearSession()
+        navigate('/login')
+      }
     })
-    cargarCeldas().catch(() => {
-      clearSession()
-      navigate('/login')
-    })
+    if (!esInvitado) {
+      cargarCeldas().catch(() => {
+        clearSession()
+        navigate('/login')
+      })
+    }
     cargarGrids().catch(() => {
-      clearSession()
-      navigate('/login')
+      if (!esInvitado) {
+        clearSession()
+        navigate('/login')
+      }
     })
-  }, [cargarOraciones, cargarCeldas, cargarGrids, navigate])
+  }, [cargarOraciones, cargarCeldas, cargarGrids, navigate, esInvitado])
 
   function handleLogout() {
     clearSession()
@@ -229,7 +236,7 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
-      <Header titulo="Bingo Mundial" onLogout={handleLogout} usuario={usuario} />
+      <Header titulo="Bingo Mundial" onLogout={handleLogout} usuario={usuario} esInvitado={esInvitado} />
 
       <DndContext
         sensors={sensors}
@@ -248,7 +255,7 @@ export default function Dashboard() {
               onAgregar={handleAgregar}
               onEditar={handleEditar}
               onEliminar={handleEliminar}
-              isEditable={esGridPropio}
+              isEditable={esGridPropio && !esInvitado}
             />}
           </SortableContext>
 

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import api from '../api/client'
-import { getUsuario } from '../auth/session'
+import { getUsuario, isGuest } from '../auth/session'
 import Grid5x5 from './Grid5x5'
 
 export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estadosCeldas, onClickCelda, onGridChange }) {
   const usuarioActual = getUsuario()
+  const esInvitado = isGuest()
   const [grids, setGrids] = useState(gridsExterno || [])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(!gridsExterno)
@@ -19,14 +20,16 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
     if (gridsExterno) {
       setGrids(gridsExterno)
       // Cuando los grids se actualicen, encontrar el índice del usuario actual
-      const indiceUsuarioActual = gridsExterno.findIndex(
-        (grid) => grid.usuario.id === usuarioActual.id
-      )
-      if (indiceUsuarioActual !== -1) {
-        setCurrentIndex(indiceUsuarioActual)
+      if (!esInvitado && usuarioActual?.id) {
+        const indiceUsuarioActual = gridsExterno.findIndex(
+          (grid) => grid.usuario.id === usuarioActual.id
+        )
+        if (indiceUsuarioActual !== -1) {
+          setCurrentIndex(indiceUsuarioActual)
+        }
       }
     }
-  }, [gridsExterno, usuarioActual.id])
+  }, [gridsExterno, usuarioActual?.id, esInvitado])
 
   async function cargarGrids() {
     try {
@@ -34,11 +37,13 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
       setGrids(data)
       
       // Encontrar el índice del usuario actual
-      const indiceUsuarioActual = data.findIndex(
-        (grid) => grid.usuario.id === usuarioActual.id
-      )
-      if (indiceUsuarioActual !== -1) {
-        setCurrentIndex(indiceUsuarioActual)
+      if (!esInvitado && usuarioActual?.id) {
+        const indiceUsuarioActual = data.findIndex(
+          (grid) => grid.usuario.id === usuarioActual.id
+        )
+        if (indiceUsuarioActual !== -1) {
+          setCurrentIndex(indiceUsuarioActual)
+        }
       }
       
       setLoading(false)
@@ -57,7 +62,7 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
   }
 
   const gridActual = grids[currentIndex]
-  const esGridPropio = gridActual?.usuario?.id === usuarioActual?.id
+  const esGridPropio = !esInvitado && gridActual?.usuario?.id === usuarioActual?.id
 
   useEffect(() => {
     if (gridActual) {

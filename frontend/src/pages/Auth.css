@@ -66,3 +66,44 @@
 .auth-link a {
   color: #60a5fa;
 }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #475569;
+}
+
+.auth-divider span {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auth-guest-btn {
+  margin: 0;
+  padding: 0.65rem;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.auth-guest-btn:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #e2e8f0;
+  border-color: #64748b;
+}
+
