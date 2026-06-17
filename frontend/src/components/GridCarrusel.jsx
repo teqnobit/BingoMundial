@@ -2,13 +2,20 @@ import { useState, useEffect } from 'react'
 import api from '../api/client'
 import { getUsuario, isGuest } from '../auth/session'
 import Grid5x5 from './Grid5x5'
+import { useSwipeable } from 'react-swipeable'
 
-export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estadosCeldas, onClickCelda, onGridChange }) {
+export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estadosCeldas, onClickCelda, onGridChange, anchoWindow }) {
   const usuarioActual = getUsuario()
   const esInvitado = isGuest()
   const [grids, setGrids] = useState(gridsExterno || [])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(!gridsExterno)
+  const handlers = useSwipeable({
+    onSwipedLeft: handleSiguiente,
+    onSwipedRight: handleAnterior,
+    preventDefaultTouchmoveEvent: true,
+    trackTouch: true,
+  })
 
   useEffect(() => {
     if (!gridsExterno) {
@@ -35,7 +42,7 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
     try {
       const { data } = await api.get('/oraciones/grids')
       setGrids(data)
-      
+
       // Encontrar el índice del usuario actual
       if (!esInvitado && usuarioActual?.id) {
         const indiceUsuarioActual = data.findIndex(
@@ -45,7 +52,7 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
           setCurrentIndex(indiceUsuarioActual)
         }
       }
-      
+
       setLoading(false)
     } catch (error) {
       console.error('Error al cargar grids:', error)
@@ -79,19 +86,21 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
   }
 
   return (
-    <div className="grid-carrusel">
+    <div className="grid-carrusel" {...handlers}>
       <div className="carrusel-header">
         <h3>{gridActual.usuario.nombre}</h3>
       </div>
 
       <div className="carrusel-container">
-        <button
-          className="carrusel-btn carrusel-btn-anterior"
-          onClick={handleAnterior}
-          title="Anterior"
-        >
-          ◀
-        </button>
+        {(anchoWindow > 1024) && (
+          <button
+            className="carrusel-btn carrusel-btn-anterior"
+            onClick={handleAnterior}
+            title="Anterior"
+          >
+            ◀
+          </button>
+        )}
 
         <div className="carrusel-grid">
           <Grid5x5
@@ -102,13 +111,15 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
           />
         </div>
 
-        <button
-          className="carrusel-btn carrusel-btn-siguiente"
-          onClick={handleSiguiente}
-          title="Siguiente"
-        >
-          ▶
-        </button>
+        {(anchoWindow > 1024) && (
+          <button
+            className="carrusel-btn carrusel-btn-siguiente"
+            onClick={handleSiguiente}
+            title="Siguiente"
+          >
+            ▶
+          </button>
+        )}
       </div>
 
       <div className="carrusel-footer">

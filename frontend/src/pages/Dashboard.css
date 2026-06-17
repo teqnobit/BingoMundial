@@ -331,6 +331,13 @@
   gap: 1rem;
 }
 
+@media (max-width: 400px) {
+  .grid-carrusel {
+    gap: 0;
+    touch-action: 'none';
+  }
+}
+
 .carrusel-header {
   padding: 0.5rem 1rem;
 }

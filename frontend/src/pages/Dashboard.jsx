@@ -265,6 +265,7 @@ export default function Dashboard() {
               estadosCeldas={estadosCeldasActivo}
               onClickCelda={handleClickCelda}
               onGridChange={setActiveGrid}
+              anchoWindow={anchoWindow}
             />
             {lastDrop && (
               <p className="drop-feedback">
