@@ -40,6 +40,12 @@ def login(
     db: Session = Depends(get_db),
 ):
     user = db.query(Usuario).filter(Usuario.nombre == form_data.username).first()
+    if not user.tiene_permiso:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Aun no tienes permisos para acceder al sistema, comunicate con el administrador.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if not user or not verify_password(form_data.password, user.contrasena):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

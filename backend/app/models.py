@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -14,7 +14,7 @@ class Usuario(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     nombre: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     contrasena: Mapped[str] = mapped_column(String(255), nullable=False)
-
+    tiene_permiso: Mapped[bool] = mapped_column(Boolean, default=False)
 
 class Oracion(Base):
     __tablename__ = "oraciones"
