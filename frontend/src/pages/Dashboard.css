@@ -220,6 +220,13 @@
   gap: 1rem;
 }
 
+.grid-4x4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(64px, 120px));
+  grid-template-rows: repeat(4, minmax(64px, 120px));
+  gap: 6px;
+}
+
 .grid-5x5 {
   display: grid;
   grid-template-columns: repeat(5, minmax(64px, 120px));
@@ -252,6 +259,10 @@
 /* Estados de celdas */
 .grid-cell {
   cursor: pointer;
+}
+
+.grid-4x4.readonly .grid-cell {
+  cursor: default;
 }
 
 .grid-5x5.readonly .grid-cell {
@@ -389,6 +400,12 @@
   justify-content: center;
   flex: 1;
   min-width: 0;
+}
+
+.carrusel-grid .grid-4x4 {
+  grid-template-columns: repeat(4, minmax(60px, 120px));
+  grid-template-rows: repeat(4, minmax(60px, 120px));
+  gap: 4px;
 }
 
 .carrusel-grid .grid-5x5 {

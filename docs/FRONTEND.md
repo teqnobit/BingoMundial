@@ -33,7 +33,7 @@ frontend/
     │   └── session.js      # Gestión de sesión localStorage
     ├── components/         # Componentes reutilizables
     │   ├── AsideOraciones.jsx
-    │   ├── Grid5x5.jsx
+    │   ├── Grid4x4.jsx
     │   └── Header.jsx
     └── pages/              # Componentes de página
         ├── Login.jsx
@@ -203,8 +203,8 @@ Encabezado de la aplicación con datos del usuario
 />
 ```
 
-### Grid5x5.jsx
-Cuadrícula 5×5 para el juego de bingo con celdas droppable
+### Grid4x4.jsx
+Cuadrícula 4×4 para el juego de bingo con celdas droppable
 
 **Componentes internos:**
 - **Celda**: Cada celda individual de la cuadrícula
@@ -297,7 +297,7 @@ Página principal del juego (privada)
 **Secciones:**
 - Header con usuario y botón logout
 - Aside izquierdo: lista de oraciones
-- Main: cuadrícula 5×5 y feedback de drops
+- Main: cuadrícula 4×4 y feedback de drops
 
 **Funcionalidades principales:**
 - Cargar oraciones al montar el componente

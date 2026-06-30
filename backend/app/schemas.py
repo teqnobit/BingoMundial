@@ -41,14 +41,26 @@ class OrdenUpdate(BaseModel):
 
 class DropPayload(BaseModel):
     oracion_id: int
-    fila: int = Field(ge=0, le=4)
-    columna: int = Field(ge=0, le=4)
+    fila: int = Field(ge=0, le=3)
+    columna: int = Field(ge=0, le=3)
 
 
 class EstadoCeldaUpdate(BaseModel):
-    fila: int = Field(ge=0, le=4)
-    columna: int = Field(ge=0, le=4)
+    fila: int = Field(ge=0, le=3)
+    columna: int = Field(ge=0, le=3)
     estado: str = Field(pattern="^(normal|fallido|completado)$")
+
+
+# class DropPayload(BaseModel):
+#     oracion_id: int
+#     fila: int = Field(ge=0, le=4)
+#     columna: int = Field(ge=0, le=4)
+
+
+# class EstadoCeldaUpdate(BaseModel):
+#     fila: int = Field(ge=0, le=4)
+#     columna: int = Field(ge=0, le=4)
+#     estado: str = Field(pattern="^(normal|fallido|completado)$")
 
 
 class CeldaOracionResponse(BaseModel):

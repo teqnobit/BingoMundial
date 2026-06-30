@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../api/client'
 import { getUsuario, isGuest } from '../auth/session'
-import Grid5x5 from './Grid5x5'
+import Grid4x4 from './Grid4x4'
 import { useSwipeable } from 'react-swipeable'
 
 export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estadosCeldas, onClickCelda, onGridChange, anchoWindow }) {
@@ -103,7 +103,7 @@ export default function GridCarrusel({ grids: gridsExterno, onNeedRefresh, estad
         )}
 
         <div className="carrusel-grid">
-          <Grid5x5
+          <Grid4x4
             celdas={gridActual.celdas}
             estadosCeldas={estadosCeldas}
             onClickCelda={esGridPropio ? onClickCelda : undefined}
